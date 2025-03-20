@@ -1,0 +1,76 @@
+{
+  "RootLayout": {
+    "home_link": "ghar",
+    "about_link": "hamaray barey mein",
+    "counter_link": "kauntr",
+    "portfolio_link": "port folio",
+    "sign_in_link": "sain in",
+    "sign_up_link": "sain up"
+  },
+  "BaseTemplate": {
+    "description": "aap kay Nextjs Boilerplate kay liye Starter code Tailwind CSS kay sath",
+    "made_with": "banaya gaya <author></author> kay sath.",
+    "hehe": "yahan kuch nahi hai"
+  },
+  "Index": {
+    "meta_title": "Next.js Boilerplate parzntayshan",
+    "meta_description": "Next.js Boilerplate aap kay project kay liye perfect starter code hai. Apni React application Next.js framework kay sath banayein.",
+    "sponsors_title": "sponserz"
+  },
+  "Counter": {
+    "meta_title": "kauntr",
+    "meta_description": "DB operation ki ek misaal",
+    "loading_counter": "kauntr load ho raha hai...",
+    "security_powered_by": "security, bot detection aur rate limiting powered by"
+  },
+  "CounterForm": {
+    "presentation": "kauntr database mein store hai aur aap ki di hui value say barhaya jata hai.",
+    "label_increment": "is say barhayein",
+    "button_increment": "barhayein"
+  },
+  "CurrentCount": {
+    "count": "kauntr: {count}"
+  },
+  "About": {
+    "meta_title": "hamaray barey mein",
+    "meta_description": "hamaray barey mein tafseel",
+    "about_paragraph": "hamaray about page par khush aamdeed! Hum ek passionate afrad ki team hain jo shandaar software bananay kay liye dedicated hain.",
+    "translation_powered_by": "tarjuma powered by"
+  },
+  "Portfolio": {
+    "meta_title": "port folio",
+    "meta_description": "meray port folio page par khush aamdeed!",
+    "presentation": "meray port folio page par khush aamdeed! Yahan aap ko meray kaam aur kamyabiyon ka ek mukhtasir tareeqay say chuna hua collection milega. Is port folio kay zariye, main apni expertise, creativity aur aap kay projects mein lanay wali value ko dikhata hoon.",
+    "portfolio_name": "port folio {name}",
+    "error_reporting_powered_by": "error reporting powered by",
+    "coverage_powered_by": "code coverage powered by"
+  },
+  "PortfolioSlug": {
+    "meta_title": "port folio {slug}",
+    "meta_description": "port folio {slug} ki tafseel",
+    "header": "port folio {slug}",
+    "content": "ek corporate event kay liye promotional materials aur branding elements ka set banaya. Ek visually unified theme design kiya, jis mein logo, posters, banners aur digital assets shamil hain. Client ki brand identity ko integrate kiya jabkay isay ek contemporary aur innovative approach say milaya. Event attendees say pasandeeda jawab hasil hue, jis kay natije mein ek kamyab event hua jis mein participants ka engagement barha aur brand visibility behtar hui.",
+    "log_management_powered_by": "log management powered by"
+  },
+  "SignIn": {
+    "meta_title": "sain in",
+    "meta_description": "apnay account mein user-friendly login process kay sath asani say sain in karein."
+  },
+  "SignUp": {
+    "meta_title": "sain up",
+    "meta_description": "hamaray intuitive sain up process kay zariye asani say account banayein."
+  },
+  "Dashboard": {
+    "meta_title": "dash board",
+    "hello_message": "salam {email}!",
+    "alternative_message": "kya aap apna SaaS tezi say isi stack kay sath banana chahtay hain? <url></url> try karein."
+  },
+  "UserProfile": {
+    "meta_title": "user profile"
+  },
+  "DashboardLayout": {
+    "dashboard_link": "dashboard",
+    "user_profile_link": "apna account manage karein",
+    "sign_out": "sain out"
+  }
+}
