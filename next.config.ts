@@ -64,14 +64,3 @@ export default withSentryConfig(
     telemetry: false,
   },
 );
-
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  output: 'export',
-  images: {
-    unoptimized: true,
-  },
-  basePath: '/fyp2final', // Change 'your-repo-name' to your actual repo name
-};
-
-module.exports = nextConfig;
