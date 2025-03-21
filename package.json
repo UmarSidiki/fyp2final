@@ -1,7 +1,7 @@
 {
-  "name": "next-js-boilerplate",
+  "name": "thetravelers",
   "version": "3.64.1",
-  "author": "Ixartz (https://github.com/ixartz)",
+  "author": "UmarSidiki (https://github.com/UmarSidiki/fyp2final/)",
   "engines": {
     "node": ">=20"
   },
