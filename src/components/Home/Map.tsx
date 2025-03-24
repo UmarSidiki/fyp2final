@@ -1,4 +1,4 @@
-/* eslint-disable */
+'eslint-disable';
 'use client';
 import {
   DirectionsRenderer,
@@ -6,7 +6,6 @@ import {
   Marker,
   useJsApiLoader,
 } from '@react-google-maps/api';
-import { ESLint } from 'eslint';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
@@ -45,7 +44,7 @@ const MapComponent = ({ destinationLat, destinationLng }: MapComponentProps) => 
   const [directions, setDirections] = useState(null);
   const [distance, setDistance] = useState('');
   const [duration, setDuration] = useState('');
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const { theme } = useTheme();
 
