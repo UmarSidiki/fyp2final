@@ -1,0 +1,20 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M0 0h200v200H0z" fill="none"/>
+  <path d="M0 40h200M0 80h200M0 120h200M0 160h200M40 0v200M80 0v200M120 0v200M160 0v200" stroke="#D2B48C" stroke-opacity=".05" stroke-width="1"/>
+  <circle cx="40" cy="40" r="2" fill="#D2B48C" fill-opacity=".1"/>
+  <circle cx="80" cy="40" r="2" fill="#D2B48C" fill-opacity=".1"/>
+  <circle cx="120" cy="40" r="2" fill="#D2B48C" fill-opacity=".1"/>
+  <circle cx="160" cy="40" r="2" fill="#D2B48C" fill-opacity=".1"/>
+  <circle cx="40" cy="80" r="2" fill="#D2B48C" fill-opacity=".1"/>
+  <circle cx="80" cy="80" r="2" fill="#D2B48C" fill-opacity=".1"/>
+  <circle cx="120" cy="80" r="2" fill="#D2B48C" fill-opacity=".1"/>
+  <circle cx="160" cy="80" r="2" fill="#D2B48C" fill-opacity=".1"/>
+  <circle cx="40" cy="120" r="2" fill="#D2B48C" fill-opacity=".1"/>
+  <circle cx="80" cy="120" r="2" fill="#D2B48C" fill-opacity=".1"/>
+  <circle cx="120" cy="120" r="2" fill="#D2B48C" fill-opacity=".1"/>
+  <circle cx="160" cy="120" r="2" fill="#D2B48C" fill-opacity=".1"/>
+  <circle cx="40" cy="160" r="2" fill="#D2B48C" fill-opacity=".1"/>
+  <circle cx="80" cy="160" r="2" fill="#D2B48C" fill-opacity=".1"/>
+  <circle cx="120" cy="160" r="2" fill="#D2B48C" fill-opacity=".1"/>
+  <circle cx="160" cy="160" r="2" fill="#D2B48C" fill-opacity=".1"/>
+</svg>

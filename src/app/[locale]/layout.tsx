@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { DemoBadge } from '@/components/DemoBadge';
+import { ThemeProvider } from '@/components/ThemeProvider';
 import arcjet, { detectBot, request } from '@/libs/Arcjet';
 import { Env } from '@/libs/Env';
 import { routing } from '@/libs/i18nNavigation';
@@ -7,6 +7,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import '@/styles/global.css';
+import '@/styles/custom.css';
 
 export const metadata: Metadata = {
   icons: [
@@ -43,7 +44,6 @@ const aj = arcjet.withRule(
     mode: 'LIVE',
     // Block all bots except the following
     allow: [
-      // See https://docs.arcjet.com/bot-protection/identifying-bots
       'CATEGORY:SEARCH_ENGINE', // Allow search engines
       'CATEGORY:PREVIEW', // Allow preview links to show OG images
       'CATEGORY:MONITOR', // Allow uptime monitoring services
@@ -82,20 +82,17 @@ export default async function RootLayout(props: {
   // Using internationalization in Client Components
   const messages = await getMessages();
 
-  // The `suppressHydrationWarning` attribute in <body> is used to prevent hydration errors caused by Sentry Overlay,
-  // which dynamically adds a `style` attribute to the body tag.
-
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <NextIntlClientProvider
-          locale={locale}
-          messages={messages}
-        >
-          {props.children}
-
-          <DemoBadge />
-        </NextIntlClientProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <NextIntlClientProvider
+            locale={locale}
+            messages={messages}
+          >
+            {props.children}
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
