@@ -1,5 +1,4 @@
-/* eslint-disable unused-imports/no-unused-vars */
-
+/* eslint-disable */
 'use client';
 import {
   DirectionsRenderer,
@@ -7,6 +6,7 @@ import {
   Marker,
   useJsApiLoader,
 } from '@react-google-maps/api';
+import { ESLint } from 'eslint';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
@@ -35,8 +35,13 @@ const DARK_MAP_STYLE = [
   { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#3d3d3d' }] },
 ];
 
-const MapComponent = ({ destinationLat, destinationLng }) => {
-  const [userLocation, setUserLocation] = useState(null);
+type MapComponentProps = {
+  destinationLat: number | null;
+  destinationLng: number | null;
+};
+
+const MapComponent = ({ destinationLat, destinationLng }: MapComponentProps) => {
+  const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [directions, setDirections] = useState(null);
   const [distance, setDistance] = useState('');
   const [duration, setDuration] = useState('');
