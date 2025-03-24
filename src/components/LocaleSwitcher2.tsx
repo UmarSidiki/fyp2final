@@ -2,12 +2,12 @@ import { routing, usePathname } from '@/libs/i18nNavigation';
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
-const LocaleSwitcher = ({ isScrolled }) => {
+const LocaleSwitcher = ({ isScrolled }: { isScrolled: boolean }) => {
   const router = useRouter();
   const pathname = usePathname();
   const locale = useLocale();
 
-  const handleChange = (event) => {
+  const handleChange = (event: { target: { value: any } }) => {
     router.push(`/${event.target.value}${pathname}`);
     router.refresh();
   };

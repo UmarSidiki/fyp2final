@@ -1,4 +1,3 @@
-'eslint-disable';
 'use client';
 import {
   DirectionsRenderer,
@@ -41,12 +40,14 @@ type MapComponentProps = {
 
 const MapComponent = ({ destinationLat, destinationLng }: MapComponentProps) => {
   const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
-  const [directions, setDirections] = useState(null);
+  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [distance, setDistance] = useState('');
   const [duration, setDuration] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const { theme } = useTheme();
+
+  // eslint-disable-next-line no-console
+  console.log(distance, duration);
 
   // Load Google Maps API
   const { isLoaded, loadError } = useJsApiLoader({
@@ -63,10 +64,10 @@ const MapComponent = ({ destinationLat, destinationLng }: MapComponentProps) => 
   useEffect(() => {
     if (!isLoaded || typeof destinationLat !== 'number' || typeof destinationLng !== 'number') {
       if (!isLoaded) {
-        setError('Google Maps API is not yet loaded.');
+        console.error('Google Maps API is not yet loaded.');
       }
       if (typeof destinationLat !== 'number' || typeof destinationLng !== 'number') {
-        setError('Invalid destination coordinates provided.');
+        console.error('Invalid destination coordinates provided.');
       }
       return;
     }
@@ -83,20 +84,20 @@ const MapComponent = ({ destinationLat, destinationLng }: MapComponentProps) => 
               && longitude <= PAKISTAN_BOUNDS.east
             ) {
               setUserLocation({ lat: latitude, lng: longitude });
-              setError(null);
+              console.error(null);
             } else {
-              setError('Location outside Pakistan. Using fallback (Lahore).');
+              console.error('Location outside Pakistan. Using fallback (Lahore).');
               setUserLocation({ lat: 31.5497, lng: 74.3436 }); // Lahore
             }
           },
           () => {
-            setError('Unable to retrieve location. Using fallback (Lahore).');
+            console.error('Unable to retrieve location. Using fallback (Lahore).');
             setUserLocation({ lat: 31.5497, lng: 74.3436 });
           },
           { timeout: 10000, maximumAge: 60000 },
         );
       } else {
-        setError('Geolocation not supported. Using fallback (Lahore).');
+        console.error('Geolocation not supported. Using fallback (Lahore).');
         setUserLocation({ lat: 31.5497, lng: 74.3436 });
       }
     };
@@ -116,10 +117,8 @@ const MapComponent = ({ destinationLat, destinationLng }: MapComponentProps) => 
       || destinationLng < PAKISTAN_BOUNDS.west
       || destinationLng > PAKISTAN_BOUNDS.east
     ) {
-      setError('Destination is outside Pakistan.');
+      console.error('Destination is outside Pakistan.');
       setDirections(null);
-      setDistance('');
-      setDuration('');
       return;
     }
 
@@ -131,16 +130,16 @@ const MapComponent = ({ destinationLat, destinationLng }: MapComponentProps) => 
         travelMode: window.google.maps.TravelMode.DRIVING,
       },
       (result, status) => {
-        if (status === window.google.maps.DirectionsStatus.OK) {
+        if (status === window.google.maps.DirectionsStatus.OK && result) {
           setDirections(result);
-          const route = result.routes[0].legs[0];
-          setDistance(route.distance.text);
-          setDuration(route.duration.text);
-          setError(null);
+          if (result.routes?.[0]?.legs?.[0]) {
+            const route = result.routes[0].legs[0];
+            setDistance(route.distance?.text || '');
+            setDuration(route.duration?.text || '');
+          }
+          console.error(null);
         } else {
-          setError(`Unable to calculate route: ${status}`);
-          setDistance('');
-          setDuration('');
+          console.error(`Unable to calculate route: ${status}`);
         }
       },
     );
