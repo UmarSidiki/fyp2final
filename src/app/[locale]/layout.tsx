@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Header from '@/components/Header/Header';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import arcjet, { detectBot, request } from '@/libs/Arcjet';
 import { Env } from '@/libs/Env';
@@ -90,6 +91,7 @@ export default async function RootLayout(props: {
             locale={locale}
             messages={messages}
           >
+            <Header />
             {props.children}
           </NextIntlClientProvider>
         </ThemeProvider>

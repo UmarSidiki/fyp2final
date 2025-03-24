@@ -1,4 +1,6 @@
 'use client';
+import TravelSearch from '@/components/Home/Search';
+import { cn } from '@/lib/utils';
 import {
   DirectionsRenderer,
   GoogleMap,
@@ -34,20 +36,37 @@ const DARK_MAP_STYLE = [
 ];
 
 type MapComponentProps = {
-  destinationLat: number | null;
-  destinationLng: number | null;
+  initialDestination?: string;
+  bounds?: google.maps.LatLngBoundsLiteral;
+  center?: google.maps.LatLngLiteral;
+  darkMapStyle?: google.maps.MapTypeStyle[];
+  className?: string;
 };
 
-const MapComponent = ({ destinationLat, destinationLng }: MapComponentProps) => {
+/**
+ * A production-ready map component for displaying a Google Map with directions.
+ * @param initialDestination - Initial destination to display on the map.
+ * @param bounds - LatLng bounds to restrict the map (default: Pakistan).
+ * @param center - Initial center of the map (default: Pakistan center).
+ * @param darkMapStyle - Custom map styles for dark mode (default: DARK_MAP_STYLE).
+ * @param className - Additional CSS classes for styling.
+ */
+const MapComponent = ({
+  initialDestination = 'Quetta',
+  bounds = PAKISTAN_BOUNDS,
+  center = PAKISTAN_CENTER,
+  darkMapStyle = DARK_MAP_STYLE,
+  className,
+}: MapComponentProps) => {
   const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
+  const [destinationCoords, setDestinationCoords] = useState<google.maps.LatLngLiteral | null>(null);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [distance, setDistance] = useState('');
   const [duration, setDuration] = useState('');
   const [mounted, setMounted] = useState(false);
+  const [geocodeError, setGeocodeError] = useState<string | null>(null);
+  const [, setGeocodeLoading] = useState(false);
   const { theme } = useTheme();
-
-  // eslint-disable-next-line no-console
-  console.log(distance, duration);
 
   // Load Google Maps API
   const { isLoaded, loadError } = useJsApiLoader({
@@ -60,15 +79,9 @@ const MapComponent = ({ destinationLat, destinationLng }: MapComponentProps) => 
     setMounted(true);
   }, []);
 
-  // Get user location within Pakistan
+  // Get user location within bounds
   useEffect(() => {
-    if (!isLoaded || typeof destinationLat !== 'number' || typeof destinationLng !== 'number') {
-      if (!isLoaded) {
-        console.error('Google Maps API is not yet loaded.');
-      }
-      if (typeof destinationLat !== 'number' || typeof destinationLng !== 'number') {
-        console.error('Invalid destination coordinates provided.');
-      }
+    if (!isLoaded) {
       return;
     }
 
@@ -78,46 +91,41 @@ const MapComponent = ({ destinationLat, destinationLng }: MapComponentProps) => 
           (position) => {
             const { latitude, longitude } = position.coords;
             if (
-              latitude >= PAKISTAN_BOUNDS.south
-              && latitude <= PAKISTAN_BOUNDS.north
-              && longitude >= PAKISTAN_BOUNDS.west
-              && longitude <= PAKISTAN_BOUNDS.east
+              latitude >= bounds.south
+              && latitude <= bounds.north
+              && longitude >= bounds.west
+              && longitude <= bounds.east
             ) {
               setUserLocation({ lat: latitude, lng: longitude });
-              console.error(null);
             } else {
-              console.error('Location outside Pakistan. Using fallback (Lahore).');
-              setUserLocation({ lat: 31.5497, lng: 74.3436 }); // Lahore
+              setUserLocation({ lat: 31.5497, lng: 74.3436 }); // Fallback: Lahore
             }
           },
           () => {
-            console.error('Unable to retrieve location. Using fallback (Lahore).');
-            setUserLocation({ lat: 31.5497, lng: 74.3436 });
+            setUserLocation({ lat: 31.5497, lng: 74.3436 }); // Fallback: Lahore
           },
           { timeout: 10000, maximumAge: 60000 },
         );
       } else {
-        console.error('Geolocation not supported. Using fallback (Lahore).');
-        setUserLocation({ lat: 31.5497, lng: 74.3436 });
+        setUserLocation({ lat: 31.5497, lng: 74.3436 }); // Fallback: Lahore
       }
     };
 
     getUserLocation();
-  }, [isLoaded, destinationLat, destinationLng]);
+  }, [isLoaded, bounds]);
 
-  // Calculate directions within Pakistan
+  // Calculate directions
   useEffect(() => {
-    if (!isLoaded || !userLocation || !destinationLat || !destinationLng) {
+    if (!isLoaded || !userLocation || !destinationCoords) {
       return;
     }
 
     if (
-      destinationLat < PAKISTAN_BOUNDS.south
-      || destinationLat > PAKISTAN_BOUNDS.north
-      || destinationLng < PAKISTAN_BOUNDS.west
-      || destinationLng > PAKISTAN_BOUNDS.east
+      destinationCoords.lat < bounds.south
+      || destinationCoords.lat > bounds.north
+      || destinationCoords.lng < bounds.west
+      || destinationCoords.lng > bounds.east
     ) {
-      console.error('Destination is outside Pakistan.');
       setDirections(null);
       return;
     }
@@ -126,7 +134,7 @@ const MapComponent = ({ destinationLat, destinationLng }: MapComponentProps) => 
     directionsService.route(
       {
         origin: userLocation,
-        destination: { lat: destinationLat, lng: destinationLng },
+        destination: destinationCoords,
         travelMode: window.google.maps.TravelMode.DRIVING,
       },
       (result, status) => {
@@ -137,16 +145,54 @@ const MapComponent = ({ destinationLat, destinationLng }: MapComponentProps) => 
             setDistance(route.distance?.text || '');
             setDuration(route.duration?.text || '');
           }
-          console.error(null);
         } else {
-          console.error(`Unable to calculate route: ${status}`);
+          setDirections(null);
         }
       },
     );
-  }, [isLoaded, userLocation, destinationLat, destinationLng]);
+  }, [isLoaded, userLocation, destinationCoords, bounds]);
+
+  // Geocoding function to convert location name to coordinates
+  const geocodeLocation = async (location: string) => {
+    if (!location) {
+      return null;
+    }
+
+    setGeocodeLoading(true);
+    setGeocodeError(null);
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`,
+      );
+      const data = await response.json();
+      if (data.status === 'OK' && data.results.length > 0) {
+        const { lat, lng } = data.results[0].geometry.location;
+        return { lat, lng };
+      }
+      throw new Error(`Geocoding failed: ${data.status}`);
+    } catch (error: any) {
+      setGeocodeError(`Failed to geocode location: ${error.message || 'Unknown error'}. Please try a different destination.`);
+      return null;
+    } finally {
+      setGeocodeLoading(false);
+    }
+  };
+
+  // Handle destination change from TravelSearch
+  const handleDestinationChange = async (destination: string) => {
+    const coords = await geocodeLocation(destination);
+    setDestinationCoords(coords);
+  };
+
+  // Handle form submission from TravelSearch (fetch suggestions)
+  const handleSearchSubmit = async () => {
+    // In production, this would be an API call to fetch suggestions
+    // For now, return demo data (already filtered in TravelSearch)
+    return Promise.resolve([]);
+  };
 
   if (!mounted || !isLoaded) {
-    return <div className="text-center">Loading...</div>;
+    return <div className="text-center">Loading map...</div>;
   }
 
   if (loadError) {
@@ -160,14 +206,15 @@ const MapComponent = ({ destinationLat, destinationLng }: MapComponentProps) => 
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 sm:px-0">
+    <div className={cn('relative w-full md:max-w-[calc(70vw-70px)] mx-auto px-4 sm:px-0 shadow-2xl outline rounded-lg', className)}>
+      {/* Map Container - Adjusted height to accommodate search bar on mobile */}
       <GoogleMap
-        mapContainerClassName="w-full h-64 sm:h-72 md:h-80 rounded-lg shadow-md"
-        center={userLocation || PAKISTAN_CENTER}
+        mapContainerClassName="w-full h-[80vh] sm:h-[85vh] md:h-[calc(70vh-70px)] rounded-lg shadow-md"
+        center={userLocation || center}
         zoom={6}
         options={{
           restriction: {
-            latLngBounds: PAKISTAN_BOUNDS,
+            latLngBounds: bounds,
             strictBounds: true,
           },
           fullscreenControl: false,
@@ -175,7 +222,7 @@ const MapComponent = ({ destinationLat, destinationLng }: MapComponentProps) => 
           streetViewControl: false,
           zoomControl: false,
           disableDefaultUI: true,
-          styles: theme === 'dark' ? DARK_MAP_STYLE : undefined, // Apply dark mode style
+          styles: theme === 'dark' ? darkMapStyle : undefined,
         }}
       >
         {userLocation && (
@@ -185,9 +232,9 @@ const MapComponent = ({ destinationLat, destinationLng }: MapComponentProps) => 
             icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
           />
         )}
-        {destinationLat && destinationLng && (
+        {destinationCoords && (
           <Marker
-            position={{ lat: destinationLat, lng: destinationLng }}
+            position={destinationCoords}
             title="Destination"
             icon="http://maps.google.com/mapfiles/ms/icons/red-dot.png"
           />
@@ -204,6 +251,56 @@ const MapComponent = ({ destinationLat, destinationLng }: MapComponentProps) => 
           />
         )}
       </GoogleMap>
+
+      {/* Geocoding Error */}
+      {geocodeError && (
+        <div className="absolute top-4 left-4 bg-red-500 text-white p-2 rounded-lg">
+          {geocodeError}
+        </div>
+      )}
+
+      {/* Travel Search Form - Mobile-friendly positioning */}
+      <div
+        className={cn(
+          // Mobile: Fixed at bottom of viewport with minimal intrusion
+          'fixed bottom-0 left-0 right-0 w-full',
+          // Desktop: Positioned relative to map with overflow
+          'sm:absolute sm:-bottom-16 sm:left-1/2 sm:transform sm:-translate-x-1/2 sm:w-auto sm:min-w-[80%] sm:max-w-3xl',
+          // Always on top
+          'z-20',
+        )}
+      >
+        <TravelSearch
+          initialDestination={initialDestination}
+          onDestinationChange={handleDestinationChange}
+          onSubmit={handleSearchSubmit}
+          className="sm:transition-all sm:duration-300 sm:hover:-translate-y-1 sm:animate-fadeIn"
+        />
+      </div>
+
+      {/* Distance and Duration Overlay */}
+      {(distance || duration) && (
+        <div className={cn(
+          'absolute top-4 right-4 rounded-lg shadow-md p-2',
+          theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-900',
+        )}
+        >
+          {distance && (
+            <p className="text-sm">
+              Distance:
+              {' '}
+              {distance}
+            </p>
+          )}
+          {duration && (
+            <p className="text-sm">
+              Duration:
+              {' '}
+              {duration}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

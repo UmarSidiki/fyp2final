@@ -28,7 +28,7 @@ export default async function Index(props: IIndexProps) {
 
   return (
     <>
-      <MapComponent destinationLat={31.5461194} destinationLng={74.3487794} />
+      <MapComponent />
     </>
   );
 };
