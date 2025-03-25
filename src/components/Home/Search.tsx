@@ -2,12 +2,9 @@
 import type { TravelSuggestion } from '@/components/TravelSuggestionsPopup';
 import TravelSuggestionsPopup from '@/components/TravelSuggestionsPopup';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React, { useState } from 'react';
 
@@ -16,7 +13,7 @@ const demoSuggestions = [
   {
     destination: 'Quetta',
     budget: 500,
-    travelDate: '2025-04-01',
+    tripDuration: 3,
     suggestions: [
       { place: 'Ziarat Valley', description: 'A scenic hill station with pine forests.', cost: 200 },
       { place: 'Hanna Lake', description: 'A beautiful lake surrounded by mountains.', cost: 100 },
@@ -26,7 +23,7 @@ const demoSuggestions = [
   {
     destination: 'Islamabad',
     budget: 1000,
-    travelDate: '2025-04-01',
+    tripDuration: 5,
     suggestions: [
       { place: 'Margalla Hills', description: 'Hiking trails with stunning views.', cost: 300 },
       { place: 'Faisal Mosque', description: 'A modern architectural marvel.', cost: 100 },
@@ -38,7 +35,7 @@ const demoSuggestions = [
 type TravelSearchProps = {
   initialDestination?: string;
   onDestinationChange: (destination: string) => void;
-  onSubmit: (formData: { destination: string; budget: string; travelDate: Date | undefined }) => Promise<TravelSuggestion[]>;
+  onSubmit: (formData: { destination: string; budget: string; tripDuration: number | undefined }) => Promise<TravelSuggestion[]>;
   className?: string;
 };
 
@@ -57,7 +54,7 @@ export default function TravelSearch({
 }: TravelSearchProps) {
   const [destination, setDestination] = useState(initialDestination);
   const [budget, setBudget] = useState('');
-  const [travelDate, setTravelDate] = useState<Date | undefined>(undefined);
+  const [tripDuration, setTripDuration] = useState<number | undefined>(undefined);
   const [suggestions, setSuggestions] = useState<TravelSuggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -71,6 +68,11 @@ export default function TravelSearch({
     onDestinationChange(newDestination);
   };
 
+  // Handle trip duration change
+  const handleTripDurationChange = (value: string) => {
+    setTripDuration(Number.parseInt(value, 10));
+  };
+
   // Handle form submission
   const handleSubmit = async () => {
     setLoading(true);
@@ -82,12 +84,12 @@ export default function TravelSearch({
           suggestion =>
             suggestion.destination.toLowerCase() === destination.toLowerCase()
             && (!budget || suggestion.budget <= Number.parseFloat(budget))
-            && (!travelDate || suggestion.travelDate === format(travelDate, 'yyyy-MM-dd')),
+            && (!tripDuration || suggestion.tripDuration === tripDuration),
         )
         .flatMap(suggestion => suggestion.suggestions);
 
       // Simulate API call with onSubmit prop
-      const fetchedSuggestions = await onSubmit({ destination, budget, travelDate });
+      const fetchedSuggestions = await onSubmit({ destination, budget, tripDuration });
       setSuggestions(fetchedSuggestions.length > 0 ? fetchedSuggestions : filteredSuggestions);
       setOpen(true);
     } catch (err) {
@@ -116,7 +118,7 @@ export default function TravelSearch({
           // Dark/light mode styles
           theme === 'dark'
             ? 'bg-black/40 border-white/10 text-white'
-            : 'bg-white/40 border-gray-200/50 text-gray-900',
+            : 'bg-white/40 border-neutral-200/50 text-neutral-900',
         )}
       >
         {/* Form Grid Layout - Improved responsiveness */}
@@ -127,7 +129,7 @@ export default function TravelSearch({
               htmlFor="destination-input"
               className={cn(
                 'text-sm font-medium',
-                theme === 'dark' ? 'text-gray-200' : 'text-gray-700',
+                theme === 'dark' ? 'text-neutral-200' : 'text-neutral-700',
               )}
             >
               Destination
@@ -140,8 +142,8 @@ export default function TravelSearch({
               className={cn(
                 'text-base w-full', // Full width in the grid cell
                 theme === 'dark'
-                  ? 'bg-gray-800/60 text-white border-gray-600 focus:border-gray-400'
-                  : 'bg-white/60 text-gray-900 border-gray-300 focus:border-gray-500',
+                  ? 'bg-neutral-800/60 text-white border-neutral-600 focus:border-neutral-400'
+                  : 'bg-white/60 text-neutral-900 border-neutral-300 focus:border-neutral-500',
               )}
             />
           </div>
@@ -152,7 +154,7 @@ export default function TravelSearch({
               htmlFor="budget-input"
               className={cn(
                 'text-sm font-medium',
-                theme === 'dark' ? 'text-gray-200' : 'text-gray-700',
+                theme === 'dark' ? 'text-neutral-200' : 'text-neutral-700',
               )}
             >
               Budget
@@ -166,59 +168,57 @@ export default function TravelSearch({
               className={cn(
                 'text-base w-full', // Full width in the grid cell
                 theme === 'dark'
-                  ? 'bg-gray-800/60 text-white border-gray-600 focus:border-gray-400'
-                  : 'bg-white/60 text-gray-900 border-gray-300 focus:border-gray-500',
+                  ? 'bg-neutral-800/60 text-white border-neutral-600 focus:border-neutral-400'
+                  : 'bg-white/60 text-neutral-900 border-neutral-300 focus:border-neutral-500',
               )}
             />
           </div>
 
-          {/* Trip Duration Picker */}
+          {/* Trip Duration Dropdown */}
           <div className="flex flex-col space-y-2">
             <label
-              htmlFor="trip-duration-btn"
+              htmlFor="trip-duration-select"
               className={cn(
                 'text-sm font-medium',
-                theme === 'dark' ? 'text-gray-200' : 'text-gray-700',
+                theme === 'dark' ? 'text-neutral-200' : 'text-neutral-700',
               )}
             >
               Trip Duration
             </label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  id="trip-duration-btn"
-                  variant="outline"
-                  className={cn(
-                    'w-full text-base justify-start text-left font-normal',
-                    !travelDate && 'text-muted-foreground',
-                    theme === 'dark'
-                      ? 'bg-gray-800/60 text-white border-gray-600 hover:bg-gray-700/60'
-                      : 'bg-white/60 text-gray-900 border-gray-300 hover:bg-gray-100/60',
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-5 w-5" />
-                  {travelDate ? format(travelDate, 'PPP') : <span>Select date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
+            <Select
+              value={tripDuration?.toString()}
+              onValueChange={handleTripDurationChange}
+            >
+              <SelectTrigger
+                id="trip-duration-select"
                 className={cn(
-                  'w-auto p-0',
-                  theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-900',
+                  'w-full text-base h-10',
+                  !tripDuration && 'text-muted-foreground',
+                  theme === 'dark'
+                    ? 'bg-neutral-800/60 text-white border-neutral-600 hover:bg-neutral-700/60'
+                    : 'bg-white/60 text-neutral-900 border-neutral-300 hover:bg-neutral-100/60',
                 )}
               >
-                <Calendar
-                  mode="single"
-                  selected={travelDate}
-                  onSelect={setTravelDate}
-                  initialFocus
-                  className={theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}
-                />
-              </PopoverContent>
-            </Popover>
+                <SelectValue placeholder="Select days" />
+              </SelectTrigger>
+              <SelectContent
+                className={cn(
+                  theme === 'dark' ? 'bg-neutral-800 text-white' : 'bg-white text-neutral-900',
+                )}
+              >
+                {[1, 2, 3, 4, 5, 7, 10, 14, 21, 30].map(days => (
+                  <SelectItem key={days} value={days.toString()}>
+                    {days}
+                    {' '}
+                    {days === 1 ? 'day' : 'days'}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Find Adventures Button - Fixed alignment without hidden label */}
-          <div className="flex flex-col justify-end lg:pb-0">
+          <div className="flex flex-col justify-end">
             <Button
               onClick={handleSubmit}
               className={cn(
