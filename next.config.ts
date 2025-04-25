@@ -21,6 +21,7 @@ export default withSentryConfig(
       serverExternalPackages: ['@electric-sql/pglite'],
     }),
   ),
+
   {
     // For all available options, see:
     // https://github.com/getsentry/sentry-webpack-plugin#options

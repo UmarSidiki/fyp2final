@@ -1,3 +1,5 @@
+/* eslint-disable jsdoc/check-param-names */
+/* eslint-disable react/no-array-index-key */
 'use client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
@@ -19,6 +21,7 @@ type TravelSuggestionsPopupProps = {
 
 /**
  * A reusable dialog component to display travel suggestions with dark/light mode support.
+ // eslint-disable-next-line jsdoc/check-param-names
  * @param destination - The destination name to display in the dialog title.
  * @param suggestions - Array of travel suggestions to display.
  * @param open - Whether the dialog is open.

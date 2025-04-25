@@ -13,6 +13,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import useScroll from '@/hooks/useScroll';
 import { Home, Mail, Map, Menu, Wand2, X } from 'lucide-react';
 import { useState } from 'react';
+import { MdOutlineTextSnippet } from 'react-icons/md';
 import { ThemeToggle } from '../ThemeToggle';
 
 const Header = () => {
@@ -21,7 +22,8 @@ const Header = () => {
 
   const MenuItems = [
     { title: 'Home', url: '/', icon: <Home className="w-4 h-4 mr-2" /> },
-    { title: 'Destinations', url: '/destinations', icon: <Map className="w-4 h-4 mr-2" /> },
+    { title: 'Blog', url: '/blog', icon: <MdOutlineTextSnippet className="w-4 h-4 mr-2" /> },
+    { title: 'Destinations', url: '/blog', icon: <Map className="w-4 h-4 mr-2" /> },
     { title: 'AI Planner', url: '/ai-planner', icon: <Wand2 className="w-4 h-4 mr-2" /> },
     { title: 'Contact', url: '/contact', icon: <Mail className="w-4 h-4 mr-2" /> },
   ];
@@ -58,6 +60,7 @@ const Header = () => {
           <NavigationMenu>
             <NavigationMenuList className="gap-2">
               {MenuItems.map((item, index) => (
+                // eslint-disable-next-line react/no-array-index-key
                 <NavigationMenuItem key={index}>
                   <NavigationMenuLink
                     href={item.url}
@@ -139,6 +142,7 @@ const Header = () => {
                 <nav className="flex flex-col gap-4">
                   {MenuItems.map((item, index) => (
                     <a
+                      // eslint-disable-next-line react/no-array-index-key
                       key={index}
                       href={item.url}
                       className="text-slate-700 dark:text-slate-300 text-lg py-2 px-4 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 transition-all duration-300 flex items-center"
