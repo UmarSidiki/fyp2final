@@ -35,7 +35,7 @@ export default function BlogCard({ post }: { post: Post }) {
 
       <div className="p-5">
         <div className="flex justify-between items-center mb-3">
-          <Badge variant="secondary" className="hover:bg-secondary">
+          <Badge variant="secondary" className="hover:bg-secondary bg-green-800 text-white">
             <Link href={`/?category=${post.category}`}>{post.category}</Link>
           </Badge>
           <div className="flex items-center text-sm text-muted-foreground">
