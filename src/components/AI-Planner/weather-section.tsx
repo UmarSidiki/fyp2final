@@ -2,59 +2,123 @@
 'use client';
 
 import type React from 'react';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import axios from 'axios';
 import { Cloud, CloudRain, Sun, Thermometer, Wind } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function WeatherSection() {
-  const [location, setLocation] = useState('');
-  const [weatherData, setWeatherData] = useState({
-    location: 'Paris, France',
+  const [location, setLocation] = useState('Islamabad');
+  const [weatherData, setWeatherData] = useState<any>({
+    location: 'Islamabad, Pakistan',
     current: {
-      temp: 22,
+      temp: 30,
       condition: 'Sunny',
-      humidity: 65,
-      wind: 12,
+      humidity: 60,
+      wind: 10,
     },
     forecast: [
-      { day: 'Mon', temp: 22, condition: 'sunny' },
-      { day: 'Tue', temp: 24, condition: 'sunny' },
-      { day: 'Wed', temp: 21, condition: 'cloudy' },
-      { day: 'Thu', temp: 19, condition: 'rainy' },
-      { day: 'Fri', temp: 20, condition: 'cloudy' },
+      { day: 'Mon', temp: 30, condition: 'sunny' },
+      { day: 'Tue', temp: 32, condition: 'cloudy' },
+      { day: 'Wed', temp: 28, condition: 'rainy' },
+      { day: 'Thu', temp: 29, condition: 'cloudy' },
+      { day: 'Fri', temp: 30, condition: 'sunny' },
     ],
+    hourly: [],
   });
+  const getWeatherIcon = (condition: string) => {
+    const lower = condition.toLowerCase();
+
+    if (lower.includes('cloud')) {
+      return <Cloud className="h-6 w-6 text-gray-500" />;
+    } else if (lower.includes('rain')) {
+      return <CloudRain className="h-6 w-6 text-blue-500" />;
+    } else if (lower.includes('clear') || lower.includes('sun')) {
+      return <Sun className="h-6 w-6 text-yellow-500" />;
+    } else if (lower.includes('snow')) {
+      return <CloudRain className="h-6 w-6 text-white" />; // Change to SnowIcon if you add one
+    } else if (lower.includes('storm') || lower.includes('thunder')) {
+      return <CloudRain className="h-6 w-6 text-purple-500" />;
+    } else {
+      return <Sun className="h-6 w-6 text-yellow-500" />;
+    }
+  };
+
+  // const getWeatherIcon = (condition: string) => {
+  //   switch (condition.toLowerCase()) {
+  //     case 'sunny':
+  //       return <Sun className="h-6 w-6 text-yellow-500" />;
+  //     case 'cloudy':
+  //       return <Cloud className="h-6 w-6 text-gray-500" />;
+  //     case 'rainy':
+  //       return <CloudRain className="h-6 w-6 text-blue-500" />;
+  //     default:
+  //       return <Sun className="h-6 w-6 text-yellow-500" />;
+  //   }
+  // };
+
+  // Fetch weather data from OpenWeather API
+  const fetchWeatherData = async (city: string) => {
+    try {
+      const apiKey = 'd8fbe136022639ef34ba986502a8192b';
+      const [currentRes, forecastRes] = await Promise.all([
+        axios.get(`https://api.openweathermap.org/data/2.5/weather`, {
+          params: { q: city, units: 'metric', appid: apiKey },
+        }),
+        axios.get(`https://api.openweathermap.org/data/2.5/forecast`, {
+          params: { q: city, units: 'metric', appid: apiKey },
+        }),
+      ]);
+
+      const current = currentRes.data;
+      const forecastList = forecastRes.data.list;
+
+      // Extract 5 daily forecasts (same time each day)
+      const dailyForecast = forecastList.filter((item: any) =>
+        item.dt_txt.includes('12:00:00'), // pick midday forecast
+      ).slice(0, 5);
+
+      // Extract hourly forecast (next 6 entries = ~18 hours)
+      const hourlyForecast = forecastList.slice(0, 6);
+
+      setWeatherData({
+        location: city,
+        current: {
+          temp: current.main.temp,
+          condition: current.weather[0].main,
+          humidity: current.main.humidity,
+          wind: current.wind.speed,
+        },
+        forecast: dailyForecast.map((item: any) => ({
+          day: new Date(item.dt_txt).toLocaleDateString('en-US', { weekday: 'short' }),
+          temp: Math.round(item.main.temp),
+          condition: item.weather[0].main.toLowerCase(),
+        })),
+        hourly: hourlyForecast.map((item: any) => ({
+          time: new Date(item.dt_txt).toLocaleTimeString('en-US', { hour: 'numeric' }),
+          temp: Math.round(item.main.temp),
+          condition: item.weather[0].main.toLowerCase(),
+        })),
+      });
+    } catch (error) {
+      console.error('Weather fetch failed:', error);
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would fetch weather data from an API
-    // console.log('Searching for weather in:', location);
-    // Mock update for demo purposes
     if (location.trim()) {
-      setWeatherData({
-        ...weatherData,
-        location,
-      });
+      fetchWeatherData(location);
       setLocation('');
     }
   };
 
-  const getWeatherIcon = (condition: string) => {
-    switch (condition.toLowerCase()) {
-      case 'sunny':
-        return <Sun className="h-6 w-6 text-yellow-500" />;
-      case 'cloudy':
-        return <Cloud className="h-6 w-6 text-gray-500" />;
-      case 'rainy':
-        return <CloudRain className="h-6 w-6 text-blue-500" />;
-      default:
-        return <Sun className="h-6 w-6 text-yellow-500" />;
-    }
-  };
+  useEffect(() => {
+    fetchWeatherData('Islamabad'); // Default data for Islamabad
+  }, []);
 
   return (
     <Card className="h-[500px]">
@@ -93,6 +157,7 @@ export default function WeatherSection() {
             <Thermometer className="h-5 w-5 mr-2 text-red-500" />
             <span>
               Humidity:
+              {' '}
               {weatherData.current.humidity}
               %
             </span>
@@ -101,6 +166,7 @@ export default function WeatherSection() {
             <Wind className="h-5 w-5 mr-2 text-green-500" />
             <span>
               Wind:
+              {' '}
               {weatherData.current.wind}
               {' '}
               km/h
@@ -115,7 +181,8 @@ export default function WeatherSection() {
           </TabsList>
           <TabsContent value="forecast">
             <div className="flex justify-between mt-4">
-              {weatherData.forecast.map((day, index) => (
+              {/* This is just a placeholder for the forecast data */}
+              {weatherData.forecast.map((day: any, index: number) => (
                 <div key={index} className="text-center">
                   <div className="font-medium">{day.day}</div>
                   <div className="my-1">{getWeatherIcon(day.condition)}</div>
@@ -128,12 +195,20 @@ export default function WeatherSection() {
             </div>
           </TabsContent>
           <TabsContent value="hourly">
-            <div className="flex flex-col gap-2 mt-4">
-              <p className="text-center text-gray-500 dark:text-gray-400">
-                Hourly forecast available after selecting a specific date
-              </p>
+            <div className="flex justify-between mt-4 overflow-x-auto gap-4">
+              {weatherData.hourly.map((hour: any, index: number) => (
+                <div key={index} className="text-center min-w-[60px]">
+                  <div className="font-medium">{hour.time}</div>
+                  <div className="my-1">{getWeatherIcon(hour.condition)}</div>
+                  <div>
+                    {hour.temp}
+                    °
+                  </div>
+                </div>
+              ))}
             </div>
           </TabsContent>
+
         </Tabs>
       </CardContent>
     </Card>
