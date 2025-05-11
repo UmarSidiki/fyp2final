@@ -1,4 +1,6 @@
 import MapComponent from '@/components/Home/Map';
+import MainSocial from '@/components/Social/MainSocial';
+
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 type IIndexProps = {
@@ -27,8 +29,10 @@ export default async function Index(props: IIndexProps) {
   // });
 
   return (
-    <>
+    <main className="min-h-screen flex flex-col min-w-screen m-9">
       <MapComponent />
-    </>
+      <MainSocial></MainSocial>
+
+    </main>
   );
 };

@@ -1,123 +1,154 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
+import { cn } from '@/lib/utils';
 import { DollarSign } from 'lucide-react';
 import { useState } from 'react';
 
+const cities = ['lahore', 'karachi', 'islamabad', 'swat', 'murree'];
+
+function CitySearchBox({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            className={cn('w-full justify-between', !value && 'text-muted-foreground')}
+          >
+            {value ? value.charAt(0).toUpperCase() + value.slice(1) : 'Select city'}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-full p-0">
+          <Command>
+            <CommandInput placeholder={`Search ${label.toLowerCase()}...`} />
+            <CommandEmpty>No city found.</CommandEmpty>
+            <CommandGroup>
+              {cities.map(city => (
+                <CommandItem
+                  key={city}
+                  value={city}
+                  onSelect={(currentValue) => {
+                    onChange(currentValue);
+                    setOpen(false);
+                  }}
+                >
+                  {city.charAt(0).toUpperCase() + city.slice(1)}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+
 export default function ExpenseEstimatorSection() {
-  const [destination, setDestination] = useState('paris');
+  const [fromCity, setFromCity] = useState('lahore');
+  const [toCity, setToCity] = useState('islamabad');
   const [days, setDays] = useState(5);
   const [accommodationLevel, setAccommodationLevel] = useState('mid');
   const [totalEstimate, setTotalEstimate] = useState<number | null>(null);
 
-  const handleCalculate = () => {
-    // In a real app, this would call an AI service to estimate expenses
-    // For demo purposes, we'll use a simple calculation
-    let basePrice = 0;
+  const cityBasePrices: { [key: string]: number } = {
+    lahore: 40,
+    karachi: 50,
+    islamabad: 60,
+    swat: 45,
+    murree: 55,
+  };
 
-    switch (destination) {
-      case 'paris':
-        basePrice = 150;
-        break;
-      case 'tokyo':
-        basePrice = 180;
-        break;
-      case 'newyork':
-        basePrice = 200;
-        break;
-      case 'bali':
-        basePrice = 100;
-        break;
-      default:
-        basePrice = 150;
+  const getDistanceCost = (from: string, to: string) => {
+    if (from === to) {
+      return 0;
     }
+    return 15 + Math.abs(cityBasePrices[from] - cityBasePrices[to]);
+  };
 
-    let accommodationMultiplier = 1;
+  const handleCalculate = () => {
+    const basePrice = cityBasePrices[toCity] || 50;
+    const distanceCost = getDistanceCost(fromCity, toCity);
+
+    let multiplier = 1;
     switch (accommodationLevel) {
       case 'budget':
-        accommodationMultiplier = 0.7;
+        multiplier = 0.3;
         break;
       case 'mid':
-        accommodationMultiplier = 1;
+        multiplier = 0.6;
         break;
       case 'luxury':
-        accommodationMultiplier = 2;
+        multiplier = 1;
         break;
-      default:
-        accommodationMultiplier = 1;
     }
 
-    const estimate = Math.round(basePrice * days * accommodationMultiplier);
+    const estimate = Math.round((basePrice * days + distanceCost) * multiplier);
     setTotalEstimate(estimate);
   };
 
   return (
-    <Card className="h-[400px] flex flex-col">
-      <CardHeader className="pb-2">
+    <Card className="h-fit flex flex-col">
+      <CardHeader>
         <div className="flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
-          <CardTitle>Expense Estimator</CardTitle>
+          <CardTitle>Pakistan Travel Budget Estimator</CardTitle>
         </div>
-        <CardDescription>Calculate your travel budget</CardDescription>
+        <CardDescription>Estimate your trip cost within Pakistan</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1">
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="destination">Destination</Label>
-            <Select value={destination} onValueChange={setDestination}>
-              <SelectTrigger id="destination">
-                <SelectValue placeholder="Select destination" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="paris">Paris</SelectItem>
-                <SelectItem value="tokyo">Tokyo</SelectItem>
-                <SelectItem value="newyork">New York</SelectItem>
-                <SelectItem value="bali">Bali</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      <CardContent className="flex-1 space-y-4">
+        <CitySearchBox label="From" value={fromCity} onChange={setFromCity} />
+        <CitySearchBox label="To" value={toCity} onChange={setToCity} />
 
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <Label htmlFor="days">
-                Duration (days):
-                {days}
-              </Label>
-            </div>
-            <Slider id="days" min={1} max={14} step={1} value={[days]} onValueChange={value => setDays(value[0] ?? days)} />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="accommodation">Accommodation Level</Label>
-            <Select value={accommodationLevel} onValueChange={setAccommodationLevel}>
-              <SelectTrigger id="accommodation">
-                <SelectValue placeholder="Select level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="budget">Budget</SelectItem>
-                <SelectItem value="mid">Mid-range</SelectItem>
-                <SelectItem value="luxury">Luxury</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {totalEstimate !== null && (
-            <div className="mt-4 text-center">
-              <h3 className="text-lg font-semibold">Estimated Cost</h3>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                $
-                {totalEstimate}
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">per person</p>
-            </div>
-          )}
+        <div className="space-y-2">
+          <Label>
+            Duration (days):
+            {days}
+          </Label>
+          <Slider min={1} max={14} step={1} value={[days]} onValueChange={val => setDays(val[0])} />
         </div>
+
+        <div className="space-y-2 ">
+          <Label>Accommodation Level</Label>
+          <select
+            className="w-full border p-2 rounded-md "
+            value={accommodationLevel}
+            onChange={e => setAccommodationLevel(e.target.value)}
+          >
+            <option className="text-black" value="budget">Budget</option>
+            <option className="text-black" value="mid">Mid-range</option>
+            <option className="text-black" value="luxury">Luxury</option>
+          </select>
+        </div>
+
+        {totalEstimate !== null && (
+          <div className="mt-4 text-center">
+            <h3 className="text-lg font-semibold">Estimated Cost</h3>
+            <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+              PKR
+              {totalEstimate * 280}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">per person (approx)</p>
+          </div>
+        )}
       </CardContent>
-      <CardFooter className="pt-0">
+      <CardFooter>
         <Button onClick={handleCalculate} className="w-full bg-green-700 text-white">
           Calculate Estimate
         </Button>

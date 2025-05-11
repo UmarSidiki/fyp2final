@@ -1,10 +1,16 @@
 'use client';
 
 import type React from 'react';
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Calendar, Search } from 'lucide-react';
@@ -19,25 +25,39 @@ type Event = {
 
 export default function EventRecommenderSection() {
   const [location, setLocation] = useState('');
-  const [events, setEvents] = useState<Event[]>([
-    { id: 1, name: 'Paris Jazz Festival', date: 'June 15-30', type: 'music' },
-    { id: 2, name: 'Louvre Night Exhibition', date: 'May 20', type: 'art' },
-    { id: 3, name: 'Seine River Food Festival', date: 'July 5-7', type: 'food' },
-    { id: 4, name: 'Bastille Day Celebration', date: 'July 14', type: 'cultural' },
-    { id: 5, name: 'Paris Fashion Week', date: 'September 25-October 3', type: 'fashion' },
-  ]);
-  const [filteredEvents, setFilteredEvents] = useState<Event[]>(events);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would fetch events from an API
-    // console.log('Searching for events in:', location);
-    // Mock update for demo purposes
-    if (location.trim()) {
-      // Just filter the existing events for demo
-      setFilteredEvents(events.filter(event => event.name.toLowerCase().includes(location.toLowerCase())));
-    } else {
-      setFilteredEvents(events);
+    if (!location.trim()) {
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `https://app.ticketmaster.com/discovery/v2/events.json?apikey=JQVq0lfcX5zCvIafSKQgtuofAEHGxzW2&city=${encodeURIComponent(location)}&size=10`,
+      );
+      const data = await res.json();
+
+      if (data._embedded && data._embedded.events) {
+        const apiEvents: Event[] = data._embedded.events.map((event: any, index: number) => ({
+          id: index,
+          name: event.name,
+          date: event.dates?.start?.localDate || 'N/A',
+          type: event.classifications?.[0]?.segment?.name?.toLowerCase() || 'other',
+        }));
+
+        setEvents(apiEvents);
+        setFilteredEvents(apiEvents);
+      } else {
+        setEvents([]);
+        setFilteredEvents([]);
+      }
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      setEvents([]);
+      setFilteredEvents([]);
     }
   };
 
@@ -65,12 +85,15 @@ export default function EventRecommenderSection() {
           <Calendar className="h-5 w-5 text-green-600 dark:text-green-400" />
           <CardTitle>Local Event Recommender</CardTitle>
         </div>
-        <CardDescription>Discover events and festivals at your destination</CardDescription>
+        <CardDescription>
+          Discover events and festivals at your destination
+        </CardDescription>
       </CardHeader>
+
       <CardContent className="flex-1 overflow-hidden">
         <form onSubmit={handleSearch} className="flex gap-2 mb-4">
           <Input
-            placeholder="Search events..."
+            placeholder="Search events by city..."
             value={location}
             onChange={e => setLocation(e.target.value)}
             className="flex-1"
@@ -91,16 +114,22 @@ export default function EventRecommenderSection() {
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{event.date}</p>
               </div>
             ))}
+
             {filteredEvents.length === 0 && (
               <p className="text-center text-gray-500 dark:text-gray-400 py-4">
-                No events found. Try a different search term.
+                No events found. Try a different city.
               </p>
             )}
           </div>
         </ScrollArea>
       </CardContent>
+
       <CardFooter className="pt-0">
-        <Button variant="outline" className="w-full  bg-green-700 text-white dark:bg-green-700" onClick={() => setFilteredEvents(events)}>
+        <Button
+          variant="outline"
+          className="w-full bg-green-700 text-white dark:bg-green-700"
+          onClick={() => setFilteredEvents(events)}
+        >
           Show All Events
         </Button>
       </CardFooter>

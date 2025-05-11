@@ -23,7 +23,7 @@ const Header = () => {
   const MenuItems = [
     { title: 'Home', url: '/', icon: <Home className="w-4 h-4 mr-2" /> },
     { title: 'Blog', url: '/blog', icon: <MdOutlineTextSnippet className="w-4 h-4 mr-2" /> },
-    { title: 'Destinations', url: '/', icon: <Map className="w-4 h-4 mr-2" /> },
+    { title: 'Destinations', url: '/destination', icon: <Map className="w-4 h-4 mr-2" /> },
     { title: 'AI Planner', url: '/ai-planner', icon: <Wand2 className="w-4 h-4 mr-2" /> },
     { title: 'Contact', url: '/contact', icon: <Mail className="w-4 h-4 mr-2" /> },
   ];
